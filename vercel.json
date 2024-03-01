@@ -22,7 +22,7 @@
         },
         {
             "src": "/(.*)",
-            "dest": "djangoprojectname/wsgi.py"
+            "dest": "core/wsgi.py"
         }
     ]
 }
