@@ -11,9 +11,10 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
-import os
 import dj_database_url
-from decouple import config
+import os
+import django
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,12 +24,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-3pccevwt=)qdz71l0nq*jqm508t^lt1$v8d9ou*s0jgtyt1m8&'
+# SECRET_KEY = 'django-insecure-3pccevwt=)qdz71l0nq*jqm508t^lt1$v8d9ou*s0jgtyt1m8&'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+SECRET_KEY = os.environ.get("SECRET_KEY")
+# DEBUG = True
+DEBUG = os.environ.get("DEBUG",False) == True
 
-ALLOWED_HOSTS = ['127.0.0.1', '.vercel.app']
+ALLOWED_HOSTS = []
+
+RENDER_EXTERNAL_HOSTNAME =os.environ.get("RENDER_EXTERNAL_HOSTNAME")
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 
 # Application definition
@@ -95,15 +102,22 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 DATABASES = {
-    'default': {
+    'default':dj_database_url.config(conn_max_age=600) if "DATABASE_URL" in os.environ 
+    else
+    {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+        'NAME': os.path.join(BASE_DIR ,'db.sqlite3')
+        }
 }
-DATABASES['default'] =dj_database_url.config()
 
-
+DATABASE_URL = os.getenv('DATABASE_URL')
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
@@ -141,7 +155,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
-STATIC_ROOT= BASE_DIR / "staticfiles_build" / "staticfiles"
+STATIC_ROOT= BASE_DIR / "staticfiles"
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
@@ -179,8 +193,8 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True,
 }
 
-CORS_ORIGIN_WHITELIST = (
-'http://localhost:3000',
-# 'https://itech-9b147.web.app',
-# 'https://itech-9b147.firebaseapp.com'
-)
+# CORS_ORIGIN_WHITELIST = (
+# 'http://localhost:3000',
+# # 'https://itech-9b147.web.app',
+# # 'https://itech-9b147.firebaseapp.com'
+# )
